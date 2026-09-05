@@ -171,32 +171,8 @@ Location: `Documents\AirSim\settings.json` on the **Windows** side.
 
 1. Open **Blocks.exe** to start **AirSim**.
 2. Run `px4` in WSL2.
-3. Watch the `pxh>` console — it should report the simulator host it
-   connected to (not `localhost`) and, once GPS streams in, print healthy
-   global/home position checks.
-4. From PyCharm on Windows, connect MAVSDK to
-   `udpin://0.0.0.0:14550` (as in the original script) — with the `-p`
-   broadcast fix from §4.
+3. From PyCharm on Windows, connect MAVSDK to
+   `udpin://0.0.0.0:14550`, with the `-p`
+   broadcast fix from §3.
 
 ---
-
-## Troubleshooting
-
-- **No TCP connection at all:** confirm `PX4_SIM_HOST_ADDR` and
-  `LocalHostIp` are the *same* address, and re-check `ipconfig` — it may
-  have changed since your last reboot.
-- **TCP connects but no telemetry to Windows:** this is the symptom the
-  `-f` → `-p` broadcast fix (§3) addresses — confirm the ROMFS source
-  edit was actually rebuilt (`grep -n "\-p \$mavlink_network_interface_arg"
-  build/px4_sitl_default/etc/init.d-posix/px4-rc.mavlink` should show the
-  edited line).
-- **Works, then breaks after a Windows reboot:** you're on WSL2's default
-  NAT networking mode and the vEthernet address rotated — either update
-  the address in both places each time, or switch to `mirrored` mode in
-  `.wslconfig` (§4).
-- **Windows Firewall:** make sure inbound TCP 4560 and UDP 14540/14550/14580
-  are allowed on the `vEthernet (WSL)` adapter.
-- **`PX4_SIM_HOST_ADDR` seems to have no effect:** confirm your
-  PX4-Autopilot checkout is recent enough to read it — `grep -n
-  "PX4_SIM_HOST_ADDR" ROMFS/px4fmu_common/init.d-posix/rcS`. If it's
-  missing, update the repo.
