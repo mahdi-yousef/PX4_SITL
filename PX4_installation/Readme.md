@@ -1,30 +1,24 @@
-# PX4 SITL + AirSim (WSL2) + PyCharm Offboard — Setup Guide
+# PX4 SITL + AirSim (WSL2) + PyCharm Offboard Setup Guide
 
 This guide covers: installing PX4 SITL on Ubuntu/WSL2, launching it with the
 `none_iris` target, connecting it to AirSim running on the Windows host, and
 enabling a broadcast MAVLink link so a Python/MAVSDK script running in
 PyCharm on Windows can do offboard control.
 
-Environment assumed: **PX4 SITL runs inside WSL2 (Ubuntu)**, **AirSim runs on
+Environment: **PX4 SITL runs inside WSL2 (Ubuntu)**, **AirSim runs on
 the Windows host**.
 
 ---
 
 ## 1. Install PX4 SITL (minimal dependencies)
 
-Only the packages actually needed to build and run SITL — no Gazebo,
-jMAVSim, or NuttX cross-toolchain, since AirSim is the simulator and you're
-not flashing real hardware.
-
+Only the packages actually needed to build and run SITL and connect to Airsim:
+Inside WSL:
 ```bash
 sudo apt update
 sudo apt install -y git python3-pip python3-venv
-
 git clone --recursive https://github.com/PX4/PX4-Autopilot.git
 cd PX4-Autopilot
-# optional: pin a known-good release instead of main
-# git checkout v1.14.0
-
 bash ./Tools/setup/ubuntu.sh --no-sim-tools --no-nuttx
 ```
 
