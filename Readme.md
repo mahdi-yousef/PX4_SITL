@@ -27,7 +27,7 @@ idea in a SITL environment as a first step before any hardware testing.
   multirotor (`simpleflight`) spawned at runtime, armed, taken off, climbed
   to altitude, then set on a constant-velocity escape move
   (`moveByVelocityAsync`). This stands in for a maneuvering intruder.
-- **The PX4 vehicle — the interceptor** (`run_px4_interception`). Armed
+- **The PX4 vehicle -the interceptor-** (`run_px4_interception`). Armed
   and taken off itself via `drone.action`, then switched into MAVSDK
   offboard mode. Each control-loop iteration:
   1. grabs a camera frame and runs AirSim's detection filter
@@ -54,7 +54,7 @@ null the **rotation rate of the line of sight (LOS)** to the target. If the
 LOS direction stops rotating while range is closing, the two are on a
 collision course. In an image-based visual servoing scheme, the LOS is
 measured directly from the camera image rather than from a separate
-navigation/estimation solution — the target's pixel position *is* the LOS
+navigation/estimation solution so the target's pixel position is the LOS
 measurement.
 
 The underlying PNG law is:
@@ -144,7 +144,7 @@ back into a unit direction vector for the velocity command.
   </tr>
 </table>
 
-## Project layout
+## Repository layout
 
 ```
 .
