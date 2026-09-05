@@ -108,8 +108,9 @@ async def run_px4_interception(client, drone, camera_name, image_type):
                 velocity.east_m_s ** 2 +
                 velocity.down_m_s ** 2
             )
+            ka = 0.4 #acceleration boost
             #saturate desired velocity vector magnitude
-            vd = np.clip(v_actual + 0.4, 0, 25)
+            vd = np.clip(v_actual + ka, 0, 25)
 
             desired_velocity = nvd * vd
             #proportional yaw controller to keep target at center of image
