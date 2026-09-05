@@ -12,6 +12,7 @@ Airsim runs on prebuilt Unreal Engine 5 binaries that can be downloaded from [Ai
 ## 1. Install PX4 SITL (minimal dependencies)
 
 Only the packages actually needed to build and run SITL and connect to Airsim:
+
 Inside WSL:
 ```bash
 sudo apt update
@@ -21,11 +22,11 @@ cd PX4-Autopilot
 bash ./Tools/setup/ubuntu.sh --no-sim-tools --no-nuttx
 ```
 
-- `--no-sim-tools` skips Gazebo/jMAVSim (not needed — AirSim replaces them).
+- `--no-sim-tools` skips Gazebo/jMAVSim (not needed, AirSim replaces them).
 - `--no-nuttx` skips the ARM cross-toolchain (only needed for real flight
   controllers).
 
-**Log out and back in** (or open a fresh terminal) after this — the setup
+**Log out and back in** (or open a fresh terminal) after this, the setup
 script changes group membership and `PATH`.
 
 If the build later fails to find files, run:
@@ -52,25 +53,7 @@ settings.json (§5).
 
 ---
 
-## 3. Launch PX4 SITL with `none_iris`
-
-`none_iris` builds PX4's flight stack **without** a bundled simulator, so it
-just exposes MAVLink/TCP and waits for AirSim to connect.
-
-```bash
-cd ~/PX4-Autopilot
-export PX4_SIM_HOST_ADDR="<vEthernet (WSL) IPv4>"
-make px4_sitl_default none_iris
-```
-
-`PX4_SIM_HOST_ADDR` is read by the rcS startup script — if it's set, PX4
-dials its simulator TCP connection out to that address instead of
-`localhost`. This is what lets PX4 (in WSL2) reach AirSim (on Windows),
-since WSL2 and the Windows host don't share a loopback.
-
----
-
-## 4. Enable broadcast on MAVLink instance #0 (for PyCharm on Windows)
+## 3. Enable broadcast on MAVLink instance #0 (for PyCharm on Windows)
 
 By default, PX4's instance #0 MAVLink link (the GCS-facing link, UDP port
 14550) doesn't broadcast on the local network so we should enable broadcasting.
@@ -95,7 +78,33 @@ Press ctrl+X then Y then ENTER
   segment instead of only forwarding locally, so a listener on the Windows
   host side of the WSL vEthernet adapter (e.g. MAVSDK's
   `udpin://0.0.0.0:14550` in your script) can pick it up.
+  
+  ---
+  
+## 4. Launch PX4 SITL with `none_iris`
 
+`none_iris` builds PX4's flight stack **without** a bundled simulator, so it
+just exposes MAVLink/TCP and waits for AirSim to connect.
+
+```bash
+cd ~/PX4-Autopilot
+export PX4_SIM_HOST_ADDR="<vEthernet (WSL) IPv4>"
+make px4_sitl_default none_iris
+```
+
+`PX4_SIM_HOST_ADDR` is read by the rcS startup script — if it's set, PX4
+dials its simulator TCP connection out to that address instead of
+`localhost`. This is what lets PX4 (in WSL2) reach AirSim (on Windows),
+since WSL2 and the Windows host don't share a loopback.
+
+After PX4 launch type in pxh> terminal:
+```mavlink status```
+
+The log sould show broadcast enabled as follows:
+```
+mavlink chan: #0
+Broadcast enabled: YES
+```
 ---
 
 ## 5. `.bashrc` shortcut
@@ -160,15 +169,14 @@ Location: `Documents\AirSim\settings.json` on the **Windows** side.
 
 ## 7. Startup order & test
 
-1. Start **AirSim** first (opens TCP server on 4560).
-2. Run `px4` in WSL2 (connects out to AirSim via `PX4_SIM_HOST_ADDR`).
+1. Open **Blocks.exe** to start **AirSim**.
+2. Run `px4` in WSL2.
 3. Watch the `pxh>` console — it should report the simulator host it
    connected to (not `localhost`) and, once GPS streams in, print healthy
    global/home position checks.
 4. From PyCharm on Windows, connect MAVSDK to
    `udpin://0.0.0.0:14550` (as in the original script) — with the `-p`
-   broadcast fix from §3, this should now receive PX4's telemetry without
-   any extra manual `mavlink start` command.
+   broadcast fix from §4.
 
 ---
 
