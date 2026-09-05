@@ -5,8 +5,8 @@ This guide covers: installing PX4 SITL on Ubuntu/WSL2, launching it with the
 enabling a broadcast MAVLink link so a Python/MAVSDK script running in
 PyCharm on Windows can do offboard control.
 
-Environment: **PX4 SITL runs inside WSL2 (Ubuntu)**, **AirSim runs on
-the Windows host**. 
+Environment: PX4 SITL runs inside WSL2 (Ubuntu), AirSim runs on
+the Windows host. 
 Airsim runs on prebuilt Unreal Engine 5 binaries that can be downloaded from [AirSim releases](https://github.com/Microsoft/AirSim/releases). Refer to this link to download the `Blocks` binary used in this simulation.
 ---
 
