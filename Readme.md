@@ -108,9 +108,9 @@ back into a unit direction vector for the velocity command.
 2. **Open AirSim** on Windows first (it needs to be listening before PX4
    connects).
 3. In **PyCharm** (Windows), open and run `PX4_SITL.py`. Wait until the log shows:
-```bash
--- Connected to AirSim!
-```
+   ```bash
+   -- Connected to AirSim!
+   ```
 4. In WSL2, run the shortcut set up in the install guide:
    ```bash
    px4
@@ -124,7 +124,13 @@ back into a unit direction vector for the velocity command.
      to `png_log.csv` as it goes.
 
 ---
-
+![simulation](screenshots/simulation.png)
+<table>
+  <tr>
+    <td><img src="screenshots/png_lambda_sigma.png" width="400"></td>
+    <td><img src="screenshots/velocity_vs_desired.png" width="400"></td>
+  </tr>
+</table>
 
 ## Project layout
 
