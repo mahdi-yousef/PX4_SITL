@@ -48,8 +48,8 @@ ipconfig
 Look for the adapter named **`vEthernet (WSL)`** and note its **IPv4
 Address**. This is the address Windows uses to reach WSL2, and (from the
 WSL side) it's also the gateway address for reaching the Windows host, copy and use
-the same value for both `PX4_SIM_HOST_ADDR` (§3) and `LocalHostIp` in
-settings.json (§5).
+the same value for both `PX4_SIM_HOST_ADDR` (§4)&(§5) and `LocalHostIp` in
+settings.json (§6).
 
 ---
 
