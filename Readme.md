@@ -87,7 +87,13 @@ Each detection gives a target centroid in pixel coordinates `(u, v)`. In
 `pixel_to_NED_LOS`, the pinhole model turns that into a LOS unit vector
 in the **Earth NED frame** knowing the intrinsic (focal length, pixel size, principal point) and the extrinsic (pose)  parameters of the camera:
 
-![pinhole](screenshots/pinhole.png)
+<table>
+  <tr>
+    <td align="center">
+      <img src="screenshots/pinhole.png" width="400"><br>
+    </td>
+  </tr>
+</table>
 
 That vector is then rotated from the camera frame into world NED using the
 camera's current orientation quaternion (`simGetCameraInfo` →
