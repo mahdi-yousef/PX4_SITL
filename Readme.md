@@ -31,16 +31,16 @@ idea in a SITL environment as a first step before any hardware testing.
   and taken off itself via `drone.action`, then switched into MAVSDK
   offboard mode. Each control-loop iteration:
   1. grabs a camera frame and runs AirSim's detection filter
-     (`detect_target`, filtered to `Drone*`/`Cylinder*` mesh names) to get
+     (`detect_target`, filtered to `Drone*` mesh names) to get
      the target's bounding-box pixel centroid `(u, v)`,
   2. converts that pixel into a line-of-sight (LOS) unit vector in world
      NED using the pinhole model and the camera's current world pose
      (`pixel_to_NED_LOS`),
   3. converts the LOS vector to elevation/azimuth angles (`vec_to_angles`),
   4. applies the PNG-IBVS law below to get a commanded velocity direction,
-     scales it by a saturated closing speed, rotates it into the body
+     scales it by a saturated speed, rotates it into the body
      frame, and sends it as `VelocityBodyYawspeed` with a small
-     proportional yaw term keeping the target centered in frame,
+     proportional yaw rate term keeping the target centered in frame,
   5. logs every iteration's LOS/command angles and velocities to
      `png_log.csv`, and plots them (`plot_png_log`, `plot_velocity_log`)
      once the run ends.
@@ -58,8 +58,14 @@ navigation/estimation solution — the target's pixel position *is* the LOS
 measurement.
 
 The underlying PNG law is:
+<table>
+  <tr>
+    <td align="center">
+      <img src="screenshots/PNG.png" width="400"><br>
+    </td>
+  </tr>
+</table>
 
-![PNG law](screenshots/PNG.png)
 
 
 - **lambda_dot**: the LOS rotation rate, per axis (elevation,
@@ -72,14 +78,14 @@ The underlying PNG law is:
 
 In code, this is implemented in its integrated angle form
 `sigma = k * lamda + sigma_offset` where `sigma_offset` is a constant initialization
-fixed once at the first detection (`lamda_0`) so that the initial commanded
-direction matches the vehicle's actual initial heading/geometry.
+fixed once at the first detection (`lamda_0`) such that the initial commanded velocity
+direction has same azimuth as LOS and elevation lifted up by 30 degrees.
 
 ### Getting λ from pixel coordinates: the pinhole model
 
 Each detection gives a target centroid in pixel coordinates `(u, v)`. In
 `pixel_to_NED_LOS`, the pinhole model turns that into a LOS unit vector
-in the **Earth NED frame**:
+in the **Earth NED frame** knowing the intrinsic (focal length, pixel size, principal point) and the extrinsic (pose)  parameters of the camera:
 
 ![pinhole](screenshots/pinhole.png)
 
