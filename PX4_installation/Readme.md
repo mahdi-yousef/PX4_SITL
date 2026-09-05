@@ -7,6 +7,7 @@ PyCharm on Windows can do offboard control.
 
 Environment: **PX4 SITL runs inside WSL2 (Ubuntu)**, **AirSim runs on
 the Windows host**.
+
 Airsim runs on prebuilt Unreal Engine 5 binaries that can be downloaded from https://github.com/Microsoft/AirSim/releases. Refer to this link to download the `Blocks` binary used in this simulation.
 ---
 
