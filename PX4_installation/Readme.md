@@ -7,7 +7,7 @@ PyCharm on Windows can do offboard control.
 
 Environment: **PX4 SITL runs inside WSL2 (Ubuntu)**, **AirSim runs on
 the Windows host**.
-
+Airsim runs on prebuilt Unreal Engine 5 binaries that can be downloaded from https://github.com/Microsoft/AirSim/releases. Refer to this link to download the `Blocks` binary used in this simulation.
 ---
 
 ## 1. Install PX4 SITL (minimal dependencies)
@@ -36,74 +36,8 @@ git submodule update --init --recursive
 
 ---
 
-## 2. Launch PX4 SITL with `none_iris`
 
-`none_iris` builds PX4's flight stack **without** a bundled simulator, so it
-just exposes MAVLink/TCP and waits for AirSim to connect.
-
-```bash
-cd ~/PX4-Autopilot
-export PX4_SIM_HOST_ADDR="<vEthernet (WSL) IPv4>"   # see §4 below
-make px4_sitl_default none_iris
-```
-
-`PX4_SIM_HOST_ADDR` is read by the rcS startup script — if it's set, PX4
-dials its simulator TCP connection out to that address instead of
-`localhost`. This is what lets PX4 (in WSL2) reach AirSim (on Windows),
-since WSL2 and the Windows host don't share a loopback.
-
-**Start order matters:** start **AirSim first** (it opens the TCP server on
-port 4560), **then** launch PX4 (it connects out to AirSim as the client).
-
----
-
-## 3. Enable broadcast on MAVLink instance #0 (for PyCharm on Windows)
-
-By default, PX4's instance #0 MAVLink link (the GCS-facing link, UDP port
-14550) is started with the `-f` (forward) flag, which only forwards
-messages between local MAVLink instances — it doesn't broadcast on the
-network. That's fine when your script runs inside WSL2 alongside PX4, but
-if you want to run your Python/MAVSDK script in **PyCharm on the Windows
-host**, PX4 needs to actually broadcast on the WSL virtual network segment
-so Windows can receive it without a hardcoded target IP.
-
-Edit this line:
-
-```
-PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/px4-rc.mavlink
-```
-
-(Edit the **source** file under `ROMFS/`, not just the built copy under
-`build/px4_sitl_default/etc/init.d-posix/px4-rc.mavlink` — the build copy
-gets regenerated from the ROMFS source on every `make`, so an edit there
-alone won't survive a rebuild. Edit both if you want the fix to apply
-immediately without a full rebuild.)
-
-Find:
-```
-mavlink start -x -u $udp_gcs_port_local -r 4000000 -f $mavlink_network_interface_arg
-```
-
-Replace `-f` with `-p`:
-```
-mavlink start -x -u $udp_gcs_port_local -r 4000000 -p $mavlink_network_interface_arg
-```
-
-- `-f` = enable message forwarding between local MAVLink instances.
-- `-p` = enable broadcast mode — PX4 broadcasts on the local network
-  segment instead of only forwarding locally, so a listener on the Windows
-  host side of the WSL vEthernet adapter (e.g. MAVSDK's
-  `udpin://0.0.0.0:14550` in your script) can pick it up.
-
-Rebuild after editing the ROMFS source:
-```bash
-cd ~/PX4-Autopilot
-make px4_sitl_default none_iris
-```
-
----
-
-## 4. Get the WSL vEthernet IPv4 address
+## 2. Get the WSL vEthernet IPv4 address
 
 On **Windows**, open PowerShell or Command Prompt:
 
@@ -113,16 +47,55 @@ ipconfig
 
 Look for the adapter named **`vEthernet (WSL)`** and note its **IPv4
 Address**. This is the address Windows uses to reach WSL2, and (from the
-WSL side) it's also the gateway address for reaching the Windows host — use
-the same value for both `PX4_SIM_HOST_ADDR` (§2) and `LocalHostIp` in
+WSL side) it's also the gateway address for reaching the Windows host, copy and use
+the same value for both `PX4_SIM_HOST_ADDR` (§3) and `LocalHostIp` in
 settings.json (§5).
 
-> **Note:** in WSL2's default NAT networking mode, this address can change
-> after a reboot. If you keep losing connectivity after restarting your PC,
-> re-run `ipconfig` and update `PX4_SIM_HOST_ADDR` / `LocalHostIp`
-> accordingly — or add `networkingMode=mirrored` under `[wsl2]` in
-> `%UserProfile%\.wslconfig` (Windows 11 22H2+), which lets WSL2 share the
-> Windows host's network identity and avoids the address changing at all.
+---
+
+## 3. Launch PX4 SITL with `none_iris`
+
+`none_iris` builds PX4's flight stack **without** a bundled simulator, so it
+just exposes MAVLink/TCP and waits for AirSim to connect.
+
+```bash
+cd ~/PX4-Autopilot
+export PX4_SIM_HOST_ADDR="<vEthernet (WSL) IPv4>"
+make px4_sitl_default none_iris
+```
+
+`PX4_SIM_HOST_ADDR` is read by the rcS startup script — if it's set, PX4
+dials its simulator TCP connection out to that address instead of
+`localhost`. This is what lets PX4 (in WSL2) reach AirSim (on Windows),
+since WSL2 and the Windows host don't share a loopback.
+
+---
+
+## 4. Enable broadcast on MAVLink instance #0 (for PyCharm on Windows)
+
+By default, PX4's instance #0 MAVLink link (the GCS-facing link, UDP port
+14550) doesn't broadcast on the local network so we should enable broadcasting.
+
+Open new WSL terminal and edit `px4-rc.mavlink`:
+
+``` bash
+nano ~/PX4-Autopilot/build/px4_sitl_default/etc/init.d-posix/px4-rc.mavlink
+```
+Find:
+```
+mavlink start -x -u $udp_gcs_port_local -r 4000000 -f $mavlink_network_interface_arg
+```
+Replace `-f` with `-p`:
+```
+mavlink start -x -u $udp_gcs_port_local -r 4000000 -p $mavlink_network_interface_arg
+```
+Press ctrl+X then Y then ENTER
+
+- `-f` = enable message forwarding between local MAVLink instances.
+- `-p` = enable broadcast mode — PX4 broadcasts on the local network
+  segment instead of only forwarding locally, so a listener on the Windows
+  host side of the WSL vEthernet adapter (e.g. MAVSDK's
+  `udpin://0.0.0.0:14550` in your script) can pick it up.
 
 ---
 
@@ -184,20 +157,6 @@ Location: `Documents\AirSim\settings.json` on the **Windows** side.
   }
 }
 ```
-
-### Field reference
-
-| Field | Meaning |
-|---|---|
-| `TcpPort: 4560` | Port AirSim opens as a TCP server for the core sim↔PX4 link (sensors/actuators). PX4 dials into this. |
-| `ControlIp: "remote"` | Tells AirSim to resolve the UDP control channel's target from whatever address the incoming TCP connection came from, instead of a hardcoded IP — this is what makes the config resilient to WSL2's address changing between reboots. |
-| `ControlPortLocal: 14540` / `ControlPortRemote: 14580` | The MAVLink channel between PX4 and AirSim itself (RC/actuator/sensor injection) — separate from the GCS/offboard link your Python script uses on 14550. |
-| `LocalHostIp` | The Windows-side `vEthernet (WSL)` address — tells AirSim to open its TCP port on that adapter instead of localhost, so WSL2 can reach it. |
-
-Use the *documented* field names (`ControlPortLocal` / `ControlPortRemote`)
-— older examples floating around use `ControlPort` / `UdpPort`, which
-AirSim doesn't actually parse, so they silently do nothing.
-
 ---
 
 ## 7. Startup order & test
